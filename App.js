@@ -30,6 +30,7 @@ var sharedProps = {
 };
 
 // Sets the default scene you want for AR and VR
+// var InitialARScene = require('./js/HelloWorldSceneAR');
 var InitialARScene = require('./js/LocationBased/HelloLocation');
 var InitialVRScene = require('./js/HelloWorldScene');
 
@@ -48,7 +49,7 @@ export default class ViroSample extends Component {
     this.state = {
       navigatorType : defaultNavigatorType,
       sharedProps : sharedProps
-    }
+    };
     this._getExperienceSelector = this._getExperienceSelector.bind(this);
     this._getARNavigator = this._getARNavigator.bind(this);
     this._getVRNavigator = this._getVRNavigator.bind(this);

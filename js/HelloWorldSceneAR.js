@@ -59,7 +59,7 @@ export default class HelloWorldSceneAR extends Component {
             this.setState({
                 text : "Hello Motees!"
             });
-        } else if (state == ViroConstants.TRACKING_NONE) {
+        } else if (state == ViroConstants.TRACKING_UNAVAILABLE) {
             // Handle loss of tracking
         }
     }
