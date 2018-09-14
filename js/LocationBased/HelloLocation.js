@@ -114,9 +114,9 @@ export default class HelloLocation extends Component {
 
     _transformPointToAR(lat, long) {
         var objPoint = this._latLongToMerc(lat, long);
-        var devicePoint = this._latLongToMerc(48.1795381, 11.5604297);  // Motius HQ
+        var devicePoint = this._latLongToMerc(this.state.currentPosition.lat, this.state.currentPosition.lon);  // Motius HQ
         //var devicePoint = this._latLongToMerc(47.618534, -122.338478);
-        console.log("objPointZ: " + objPoint.y + ", objPointX: " + objPoint.x)
+        console.log("objPointZ: " + objPoint.y + ", objPointX: " + objPoint.x);
         // latitude(north,south) maps to the z axis in AR
         // longitude(east, west) maps to the x axis in AR
         var objFinalPosZ = objPoint.y - devicePoint.y;
