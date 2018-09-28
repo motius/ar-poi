@@ -50,10 +50,10 @@ export default class HelloWorldSceneAR extends Component {
         var eastPoint = this._transformPointToAR(47.618534, -122.338061);
         var westPoint = this._transformPointToAR(47.618539, -122.338644);
         var southPoint = this._transformPointToAR(47.618210, -122.338455);
-        console.log("obj north final x:" + northPoint.x + "final z:" + northPoint.z);
-        console.log("obj south final x:" + southPoint.x + "final z:" + southPoint.z);
-        console.log("obj east point x" + eastPoint.x + "final z" + eastPoint.z);
-        console.log("obj west point x" + westPoint.x + "final z" + westPoint.z);
+        console.log("[HL] obj north final x:" + northPoint.x + "final z:" + northPoint.z);
+        console.log("[HL] obj south final x:" + southPoint.x + "final z:" + southPoint.z);
+        console.log("[HL] obj east point x" + eastPoint.x + "final z" + eastPoint.z);
+        console.log("[HL] obj west point x" + westPoint.x + "final z" + westPoint.z);
         this.setState({
             northPointX: northPoint.x,
             northPointZ: northPoint.z,
