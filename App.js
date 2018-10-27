@@ -35,8 +35,9 @@ var InitialARScene = require('./js/LocationBased/HelloLocation');
 var InitialVRScene = require('./js/HelloWorldScene');
 
 var UNSET = "UNSET";
-var VR_NAVIGATOR_TYPE = "VR";
 var AR_NAVIGATOR_TYPE = "AR";
+var GARCHING = {lat: 48.1426744, lon: 11.5407752};
+var BANGALORE = {lat: 12.97194, lon: 77.59369};
 
 // This determines which type of experience to launch in, or UNSET, if the user should
 // be presented with a choice of AR or VR. By default, we offer the user a choice.
@@ -48,11 +49,12 @@ export default class ViroSample extends Component {
 
     this.state = {
       navigatorType : defaultNavigatorType,
-      sharedProps : sharedProps
+      sharedProps : sharedProps,
+      POIPosition: null,
+      label: null,
     };
     this._getExperienceSelector = this._getExperienceSelector.bind(this);
     this._getARNavigator = this._getARNavigator.bind(this);
-    this._getVRNavigator = this._getVRNavigator.bind(this);
     this._getExperienceButtonOnPress = this._getExperienceButtonOnPress.bind(this);
     this._exitViro = this._exitViro.bind(this);
   }
@@ -60,11 +62,9 @@ export default class ViroSample extends Component {
   // Replace this function with the contents of _getVRNavigator() or _getARNavigator()
   // if you are building a specific type of experience.
   render() {
-    if (this.state.navigatorType == UNSET) {
+    if (!this.state.POIPosition) {
       return this._getExperienceSelector();
-    } else if (this.state.navigatorType == VR_NAVIGATOR_TYPE) {
-      return this._getVRNavigator();
-    } else if (this.state.navigatorType == AR_NAVIGATOR_TYPE) {
+    } else {
       return this._getARNavigator();
     }
   }
@@ -76,21 +76,21 @@ export default class ViroSample extends Component {
         <View style={localStyles.inner} >
 
           <Text style={localStyles.titleText}>
-            Choose your desired experience:
+            Select your Point of Interest:
           </Text>
 
           <TouchableHighlight style={localStyles.buttons}
-            onPress={this._getExperienceButtonOnPress(AR_NAVIGATOR_TYPE)}
+            onPress={this._getExperienceButtonOnPress("Garching")}
             underlayColor={'#68a0ff'} >
 
-            <Text style={localStyles.buttonText}>AR</Text>
+            <Text style={localStyles.buttonText}>Garching</Text>
           </TouchableHighlight>
 
           <TouchableHighlight style={localStyles.buttons}
-            onPress={this._getExperienceButtonOnPress(VR_NAVIGATOR_TYPE)}
+            onPress={this._getExperienceButtonOnPress("Bangalore")}
             underlayColor={'#68a0ff'} >
 
-            <Text style={localStyles.buttonText}>VR</Text>
+            <Text style={localStyles.buttonText}>Bangalore</Text>
           </TouchableHighlight>
         </View>
       </View>
@@ -103,32 +103,38 @@ export default class ViroSample extends Component {
       <ViroARSceneNavigator {...this.state.sharedProps}
         initialScene={{scene: InitialARScene}}
         worldAlignment="GravityAndHeading"
+        viroAppProps={{
+          label: this.state.label,
+          POIPosition: this.state.POIPosition
+        }}
       />
-    );
-  }
-  
-  // Returns the ViroSceneNavigator which will start the VR experience
-  _getVRNavigator() {
-    return (
-      <ViroVRSceneNavigator {...this.state.sharedProps}
-        initialScene={{scene: InitialVRScene}} onExitViro={this._exitViro}/>
     );
   }
 
   // This function returns an anonymous/lambda function to be used
   // by the experience selector buttons
-  _getExperienceButtonOnPress(navigatorType) {
-    return () => {
-      this.setState({
-        navigatorType : navigatorType
-      })
+  _getExperienceButtonOnPress(label) {
+    if(label == "Garching") {
+      return () => {
+        this.setState({
+          POIPosition : GARCHING,
+          label: label
+        })
+      }
+    } else if(label == "Bangalore") {
+      return () => {
+        this.setState({
+          POIPosition : BANGALORE,
+          label: label
+        })
+      }
     }
   }
 
   // This function "exits" Viro by setting the navigatorType to UNSET.
   _exitViro() {
     this.setState({
-      navigatorType : UNSET
+      POIPosition : null
     })
   }
 }

@@ -21,7 +21,6 @@ export default class HelloLocation extends Component {
       POIx: 0,
       POIz: 0,
       currentPosition: {lat: 48.179296, lon: 11.5945672},
-      POIPosition: {lat: 48.1426744, lon: 11.5407752},
       isLocationFetched: false
     };
     
@@ -32,10 +31,12 @@ export default class HelloLocation extends Component {
   }
   
   render() {
+    let label = this.props.sceneNavigator.viroAppProps.label ? this.props.sceneNavigator.viroAppProps.label : "NO label";
+    console.log("SAGAR", label);
     return (
       <ViroARScene onTrackingUpdated={this._onInitialized} >
         { this.state.isLocationFetched ? 
-          <ViroText text={"POA"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.POIx, 0, this.state.POIz]} style={styles.helloWorldTextStyle}/> :
+          <ViroText text={label} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.POIx, 0, this.state.POIz]} style={styles.helloWorldTextStyle}/> :
           <ViroText text={"Fetching current location"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[5, 0, -5]} style={styles.helloWorldTextStyle}/>
         }
       </ViroARScene>
@@ -90,7 +91,8 @@ export default class HelloLocation extends Component {
   }
   
   _updateLocation() {
-    let poi_ar_coords = this._transformPointToAR(48.1426744, 11.5407752, "POI");
+    let poi = this.props.sceneNavigator.viroAppProps.POIPosition;
+    let poi_ar_coords = this._transformPointToAR(poi, "POI");
     let state = {};
     if (poi_ar_coords.z < 0) {
       state.POIz = -5;
@@ -125,11 +127,11 @@ export default class HelloLocation extends Component {
     return ({x:xmeters, y:ymeters});
   }
   
-  _transformPointToAR(lat, lon, label) {
-    let objPoint = this._latLongToMerc(lat, lon);
+  _transformPointToAR(point, label) {
+    let objPoint = this._latLongToMerc(point.lat, point.lon);
     let devicePoint = this._latLongToMerc(this.state.currentPosition.lat, this.state.currentPosition.lon);  // Motius HQ
     // 32 N 692864 5339484
-    let tmp_dist = this._pointDistance(this.state.currentPosition, {lat, lon});
+    let tmp_dist = this._pointDistance(this.state.currentPosition, point);
     
     // var devicePoint = this._latLongToMerc(47.618534, -122.338478);
     // console.log("objPointZ: " + objPoint.y + ", objPointX: " + objPoint.x);
