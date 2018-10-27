@@ -21,7 +21,7 @@
   BOOL usingNgrok = YES;
 
   if(enterVrImmediately) {
-    NSURL *jsCodeLocation =  [NSURL URLWithString:@"http://10.6.5.101:8081/index.ios.bundle"];
+    NSURL *jsCodeLocation = nil;
 #ifdef DEBUG
     if(usingNgrok) {
       VRTBundleURLProvider *bundleProvider = [[VRTBundleURLProvider alloc] init];

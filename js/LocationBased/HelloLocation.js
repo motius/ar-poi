@@ -18,17 +18,11 @@ export default class HelloLocation extends Component {
     // Set initial state here
     this.state = {
       text : "Initializing AR...",
-      googlePointX: 0,
-      googlePointZ: 0,
-      garchingPointX: 0,
-      garchingPointZ: 0,
-      manPointX: 0,
-      manPointZ: 0,
-      eastPointX: 0,
-      eastPointZ: 0,
-      westPointX: 0,
-      westPointZ: 0,
-      currentPosition: {lat: 48.179296, lon: 11.5945672}
+      POIx: 0,
+      POIz: 0,
+      currentPosition: {lat: 48.179296, lon: 11.5945672},
+      POIPosition: {lat: 48.1426744, lon: 11.5407752},
+      isLocationFetched: false
     };
     
     // bind 'this' to functions
@@ -40,14 +34,10 @@ export default class HelloLocation extends Component {
   render() {
     return (
       <ViroARScene onTrackingUpdated={this._onInitialized} >
-        {/*<ViroText text={this.state.text} scale={[.2,2,.2]} position={[5, 0, -5]} style={styles.helloWorldTextStyle} />*/}
-        {/*<ViroText text={this.state.text} scale={[.2,2,.2]} position={[5, 0, -5]} style={styles.helloWorldTextStyle} />*/}
-        {/*<ViroText text={"Home"+this.state.northPointX.toFixed(4)+":"+this.state.northPointZ} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.northPointX, 0, this.state.northPointZ]} style={styles.helloWorldTextStyle} />*/}
-        {/*<ViroText text={"Home"+this.state.southPointX.toFixed(4)+":"+this.state.southPointZ.toFixed(4)} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.southPointX, 0, this.state.southPointZ]} style={styles.helloWorldTextStyle} />*/}
-        <ViroText text={"Garching"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.garchingPointX, 0, this.state.garchingPointZ]} style={styles.helloWorldTextStyle}/>
-        <ViroText text={"Google"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.googlePointX, 0, this.state.googlePointZ]} style={styles.helloWorldTextStyle}/>
-        <ViroText text={"Man"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.manPointX, 0, this.state.manPointZ]} style={styles.helloWorldTextStyle}/>
-        {/*<ViroText text={"Garching"+this.state.southPointX.toFixed(4)+":"+this.state.southPointZ} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.southPointX, 0, this.state.southPointZ]} style={styles.helloWorldTextStyle} />*/}
+        { this.state.isLocationFetched ? 
+          <ViroText text={"POA"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.POIx, 0, this.state.POIz]} style={styles.helloWorldTextStyle}/> :
+          <ViroText text={"Fetching current location"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[5, 0, -5]} style={styles.helloWorldTextStyle}/>
+        }
       </ViroARScene>
     );
   }
@@ -79,6 +69,7 @@ export default class HelloLocation extends Component {
       console.log(`[HL]: current position updated ${coords.latitude}, ${coords.longitude}`);
       this.setState({
         currentPosition: {lat: coords.latitude, lon: coords.longitude},
+        isLocationFetched: true
       })
     }
   }
@@ -99,35 +90,14 @@ export default class HelloLocation extends Component {
   }
   
   _updateLocation() {
-    var googlePoint = this._transformPointToAR(48.1426744, 11.5407752, "Google");  //Google
-    var manPoint = this._transformPointToAR(48.1795648,11.5949283, "Man"); //Man
-    /*var eastPoint = this._transformPointToAR(48.1619194, 11.5764442);   //Home
-    var westPoint = this._transformPointToAR(48.1387926, 11.5451971);*/   //Theresenwiese
-    var garchingPoint = this._transformPointToAR(48.2681316, 11.6661422, "Garching");  //Gate Garching
-    /*var northPoint = this._transformPointToAR(47.618574, -122.338475);
-    var eastPoint = this._transformPointToAR(47.618534, -122.338061);
-    var westPoint = this._transformPointToAR(47.618539, -122.338644);
-    var southPoint = this._transformPointToAR(47.618210, -122.338455);*/
-    var state = {};
-    if (googlePoint.z < 0) {
-      state.googlePointZ = -5;
+    let poi_ar_coords = this._transformPointToAR(48.1426744, 11.5407752, "POI");
+    let state = {};
+    if (poi_ar_coords.z < 0) {
+      state.POIz = -5;
     } else {
-      state.googlePointZ = 5;
+      state.POIz = 5;
     }
-    if (manPoint.z < 0) {
-      state.manPointZ = -5;
-    } else {
-      state.manPointZ = 5;
-    }
-    if (garchingPoint.z < 0) {
-      state.garchingPointZ = -5;
-    } else {
-      state.garchingPointZ = 5;
-    }
-    state.googlePointX = googlePoint.x % 4;
-    state.garchingPointX = garchingPoint.x % 4;
-    state.manPointX = manPoint.x % 4;
-    state.text = "Hello Motees!";
+    state.POIx = poi_ar_coords.x % 4;
     this.setState(state);
   }
   

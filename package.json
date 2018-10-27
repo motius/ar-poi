@@ -5,11 +5,17 @@
   "scripts": {
     "prestart": "./node_modules/react-viro/bin/run_ngrok.sh",
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "test": "jest"
+    "test": "jest",
+    "fixReactViro": "find ./node_modules/react-viro/components -type f -exec sed -i '' 's#^import normalizeColor from \"react-native/Libraries/StyleSheet/normalizeColor\"#// import normalizeColor from \"react-native/Libraries/StyleSheet/normalizeColor\"#g' {} \\;",
+    "postinstall": "yarn run fixReactViro"
   },
   "dependencies": {
-    "react": "16.3.1",
-    "react-native": "0.55.1",
+    "husky": "^0.14.3",
+    "prop-types": "^15.6.1",
+    "react": "16.6.0-alpha.8af6728",
+    "react-native": "0.57.4",
+    "react-native-maps": "^0.22.0",
+    "react-native-vector-icons": "^4.6.0",
     "react-viro": "2.10.0"
   },
   "devDependencies": {
