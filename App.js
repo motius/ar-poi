@@ -10,6 +10,7 @@
 import React, { Component } from 'react';
 import {
   AppRegistry,
+  Button,
   Text,
   View,
   StyleSheet,
@@ -18,9 +19,9 @@ import {
 } from 'react-native';
 
 import {
-  ViroVRSceneNavigator,
   ViroARSceneNavigator
 } from 'react-viro';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 /*
  TODO: Insert your API key below
@@ -32,12 +33,9 @@ var sharedProps = {
 // Sets the default scene you want for AR and VR
 // var InitialARScene = require('./js/HelloWorldSceneAR');
 var InitialARScene = require('./js/LocationBased/HelloLocation');
-var InitialVRScene = require('./js/HelloWorldScene');
 
 var UNSET = "UNSET";
 var AR_NAVIGATOR_TYPE = "AR";
-var GARCHING = {lat: 48.1426744, lon: 11.5407752};
-var BANGALORE = {lat: 12.97194, lon: 77.59369};
 
 // This determines which type of experience to launch in, or UNSET, if the user should
 // be presented with a choice of AR or VR. By default, we offer the user a choice.
@@ -57,12 +55,13 @@ export default class ViroSample extends Component {
     this._getARNavigator = this._getARNavigator.bind(this);
     this._getExperienceButtonOnPress = this._getExperienceButtonOnPress.bind(this);
     this._exitViro = this._exitViro.bind(this);
+    this._handleLocationSelection = this._handleLocationSelection.bind(this);
   }
 
   // Replace this function with the contents of _getVRNavigator() or _getARNavigator()
   // if you are building a specific type of experience.
   render() {
-    if (!this.state.POIPosition) {
+    if (this.state.navigatorType == UNSET) {
       return this._getExperienceSelector();
     } else {
       return this._getARNavigator();
@@ -76,22 +75,56 @@ export default class ViroSample extends Component {
         <View style={localStyles.inner} >
 
           <Text style={localStyles.titleText}>
-            Select your Point of Interest:
+            Search your Point of Interest:
           </Text>
 
-          <TouchableHighlight style={localStyles.buttons}
-            onPress={this._getExperienceButtonOnPress("Garching")}
-            underlayColor={'#68a0ff'} >
+          <GooglePlacesAutocomplete
+            placeholder='Search'
+            minLength={2} // minimum length of text to search
+            autoFocus={false}
+            returnKeyType={'search'}
+            listViewDisplayed='auto'
+            fetchDetails={true}
+            renderDescription={row => row.description}
+            onPress={this._handleLocationSelection}
+            
+            getDefaultValue={() => ''}
+            
+            query={{
+              // available options: https://developers.google.com/places/web-service/autocomplete
+              key: 'AIzaSyA79qVm1it-rT11oaqJgMY875xUtVkcw3s',
+              language: 'en', // language of the results
+              types: '(cities)' // default: 'geocode'
+            }}
+            
+            styles={{
+              textInputContainer: {
+                width: '100%'
+              },
+              description: {
+                fontWeight: 'bold',
+                color: '#ffffff'
+              },
+              predefinedPlacesDescription: {
+                color: '#1faadb'
+              }
+            }}
+            
+            nearbyPlacesAPI='GooglePlacesSearch'
+            GooglePlacesSearchQuery={{
+              // available options for GooglePlacesSearch API : https://developers.google.com/places/web-service/search
+              rankby: 'distance',
+              types: 'food'
+            }}
 
-            <Text style={localStyles.buttonText}>Garching</Text>
-          </TouchableHighlight>
-
-          <TouchableHighlight style={localStyles.buttons}
-            onPress={this._getExperienceButtonOnPress("Bangalore")}
-            underlayColor={'#68a0ff'} >
-
-            <Text style={localStyles.buttonText}>Bangalore</Text>
-          </TouchableHighlight>
+            filterReverseGeocodingByTypes={['locality', 'administrative_area_level_3']}
+            debounce={200}
+          />
+          <Button
+            onPress={this._getExperienceButtonOnPress}
+            title="View direction"
+            accessibilityLabel="View direction"
+          />
         </View>
       </View>
     );
@@ -100,42 +133,47 @@ export default class ViroSample extends Component {
   // Returns the ViroARSceneNavigator which will start the AR experience
   _getARNavigator() {
     return (
-      <ViroARSceneNavigator {...this.state.sharedProps}
-        initialScene={{scene: InitialARScene}}
-        worldAlignment="GravityAndHeading"
-        viroAppProps={{
-          label: this.state.label,
-          POIPosition: this.state.POIPosition
-        }}
-      />
+      <View style={localStyles.arView} >
+        <ViroARSceneNavigator {...this.state.sharedProps}
+          style={localStyles.arView}
+          initialScene={{scene: InitialARScene}}
+          worldAlignment="GravityAndHeading"
+          viroAppProps={{
+            label: this.state.label,
+            POIPosition: this.state.POIPosition
+          }}
+        />
+        <Button
+          onPress={this._exitViro}
+          title="Exit"
+          accessibilityLabel="Exit"
+        />
+      </View>
     );
   }
 
   // This function returns an anonymous/lambda function to be used
   // by the experience selector buttons
-  _getExperienceButtonOnPress(label) {
-    if(label == "Garching") {
-      return () => {
-        this.setState({
-          POIPosition : GARCHING,
-          label: label
-        })
-      }
-    } else if(label == "Bangalore") {
-      return () => {
-        this.setState({
-          POIPosition : BANGALORE,
-          label: label
-        })
-      }
-    }
+  _getExperienceButtonOnPress() {
+    this.setState({
+      navigatorType : AR_NAVIGATOR_TYPE
+    })
   }
 
   // This function "exits" Viro by setting the navigatorType to UNSET.
   _exitViro() {
     this.setState({
-      POIPosition : null
+      navigatorType : defaultNavigatorType
     })
+  }
+
+
+  _handleLocationSelection(data, details = null) {
+    // 'details' is provided when fetchDetails = true
+    this.setState({
+      label: data.structured_formatting.main_text,
+      POIPosition: details.geometry.location
+    });
   }
 }
 
@@ -155,6 +193,9 @@ var localStyles = StyleSheet.create({
     flexDirection: 'column',
     alignItems:'center',
     backgroundColor: "black",
+  },
+  arView:{
+    flex : 1,
   },
   titleText: {
     paddingTop: 30,

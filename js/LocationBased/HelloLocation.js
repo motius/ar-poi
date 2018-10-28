@@ -20,19 +20,22 @@ export default class HelloLocation extends Component {
       text : "Initializing AR...",
       POIx: 0,
       POIz: 0,
-      currentPosition: {lat: 48.179296, lon: 11.5945672},
+      currentPosition: {lat: 48.179296, lng: 11.5945672},
       isLocationFetched: false
     };
+
+    this.navigatorWatchID = null;
     
     // bind 'this' to functions
     this._onInitialized = this._onInitialized.bind(this);
-    this._latLongToMerc = this._latLongToMerc.bind(this);
+    this._latLngToMerc = this._latLngToMerc.bind(this);
     this._transformPointToAR = this._transformPointToAR.bind(this);
+    this._onPositionFailed = this._onPositionFailed.bind(this);
+    this._onPositionUpdated = this._onPositionUpdated.bind(this);
   }
   
   render() {
     let label = this.props.sceneNavigator.viroAppProps.label ? this.props.sceneNavigator.viroAppProps.label : "NO label";
-    console.log("SAGAR", label);
     return (
       <ViroARScene onTrackingUpdated={this._onInitialized} >
         { this.state.isLocationFetched ? 
@@ -46,14 +49,14 @@ export default class HelloLocation extends Component {
   componentDidMount() {
     navigator.geolocation.setRNConfiguration({});
     navigator.geolocation.requestAuthorization();
-    navigator.geolocation.watchPosition((position => {
-      this._onPositionUpdated(position);
-    }))
-    // navigator.geolocation.getCurrentPosition((position => {
-    //   console.log("" + position.coords.latitude + " - " + position.coords.longitude);
-    // }), (error => {
-    //   console.log(error.message);
-    // }))
+    this.navigatorWatchID = navigator.geolocation.watchPosition(this._onPositionUpdated, this._onPositionFailed);
+  }
+
+  componentWillUnmount() {
+    if(this.navigatorWatchID != null) {
+      navigator.geolocation.clearWatch(this.navigatorWatchID);
+      this.navigatorWatchID = null;
+    }
   }
 
   _onInitialized(state, reason) {
@@ -67,12 +70,15 @@ export default class HelloLocation extends Component {
   _onPositionUpdated(position) {
     if (position) {
       const coords = position.coords;
-      console.log(`[HL]: current position updated ${coords.latitude}, ${coords.longitude}`);
       this.setState({
-        currentPosition: {lat: coords.latitude, lon: coords.longitude},
+        currentPosition: {lat: coords.latitude, lng: coords.longitude},
         isLocationFetched: true
       })
     }
+  }
+
+  _onPositionFailed(error) {
+    console.log('SAGAR:', JSON.stringify(error));
   }
   
   _adjustCloseObject(position) {
@@ -109,7 +115,7 @@ export default class HelloLocation extends Component {
     let f1 = (referencePoint.lat / 180.0 * Math.PI);
     let f2 = (objectPoint.lat / 180.0 * Math.PI);
     let delta_f = ((objectPoint.lat - referencePoint.lat) / 180.0 * Math.PI);
-    let delta_l = ((objectPoint.lon - referencePoint.lon) / 180.0 * Math.PI);
+    let delta_l = ((objectPoint.lng - referencePoint.lng) / 180.0 * Math.PI);
   
     let a = Math.sin(delta_f/2) * Math.sin(delta_f/2) +
       Math.cos(f1) * Math.cos(f2) *
@@ -118,30 +124,25 @@ export default class HelloLocation extends Component {
     return R * c;
   }
   
-  _latLongToMerc(lat_deg, lon_deg) {
-    var lon_rad = (lon_deg / 180.0 * Math.PI);
+  _latLngToMerc(lat_deg, lng_deg) {
+    var lng_rad = (lng_deg / 180.0 * Math.PI);
     var lat_rad = (lat_deg / 180.0 * Math.PI);
     var sm_a = 6378137.0;
-    var xmeters  = sm_a * lon_rad;
+    var xmeters  = sm_a * lng_rad;
     var ymeters = sm_a * Math.log((Math.sin(lat_rad) + 1) / Math.cos(lat_rad));
     return ({x:xmeters, y:ymeters});
   }
   
   _transformPointToAR(point, label) {
-    let objPoint = this._latLongToMerc(point.lat, point.lon);
-    let devicePoint = this._latLongToMerc(this.state.currentPosition.lat, this.state.currentPosition.lon);  // Motius HQ
+    let objPoint = this._latLngToMerc(point.lat, point.lng);
+    let devicePoint = this._latLngToMerc(this.state.currentPosition.lat, this.state.currentPosition.lng);  // Motius HQ
     // 32 N 692864 5339484
     let tmp_dist = this._pointDistance(this.state.currentPosition, point);
     
-    // var devicePoint = this._latLongToMerc(47.618534, -122.338478);
-    // console.log("objPointZ: " + objPoint.y + ", objPointX: " + objPoint.x);
-    // latitude(north,south) maps to the z axis in AR
-    // longitude(east, west) maps to the x axis in AR
     var objFinalPosZ = objPoint.y - devicePoint.y;
     var objFinalPosX = objPoint.x - devicePoint.x;
     //flip the z, as negative z(is in front of us which is north, pos z is behind(south).
     let finalPos = {x: objFinalPosX, y: 1, z: -objFinalPosZ};
-    console.log(`[HL][${label}]: distance: ${tmp_dist}; final position: ${finalPos.x} ${finalPos.y} ${finalPos.z}`);
     return finalPos;
   }
 
