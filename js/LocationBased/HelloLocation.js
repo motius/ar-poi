@@ -21,7 +21,9 @@ export default class HelloLocation extends Component {
       POIx: 0,
       POIz: 0,
       currentPosition: {lat: 48.179296, lng: 11.5945672},
-      isLocationFetched: false
+      isLocationFetched: false,
+      message: "Fetching current location",
+      distance: "Calculating.."
     };
 
     this.navigatorWatchID = null;
@@ -40,7 +42,11 @@ export default class HelloLocation extends Component {
       <ViroARScene onTrackingUpdated={this._onInitialized} >
         { this.state.isLocationFetched ? 
           <ViroText text={label} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[this.state.POIx, 0, this.state.POIz]} style={styles.helloWorldTextStyle}/> :
-          <ViroText text={"Fetching current location"} scale={[3, 3, 3]} transformBehaviors={["billboard"]} position={[5, 0, -5]} style={styles.helloWorldTextStyle}/>
+          <ViroText text={this.state.message} scale={[1, 1, 1]} transformBehaviors={["billboard"]} position={[5, 0, -5]} style={styles.helloWorldTextStyle}/>
+        }
+        { this.state.isLocationFetched ? 
+          <ViroText text={this.state.distance} scale={[1, 1, 1]} transformBehaviors={["billboard"]} position={[this.state.POIx, 1, this.state.POIz]} style={styles.helloWorldTextStyle}/> :
+          <ViroText text={"Calculating.."} scale={[1, 1, 1]} transformBehaviors={["billboard"]} position={[5, 1, -5]} style={styles.helloWorldTextStyle}/>
         }
       </ViroARScene>
     );
@@ -73,12 +79,18 @@ export default class HelloLocation extends Component {
       this.setState({
         currentPosition: {lat: coords.latitude, lng: coords.longitude},
         isLocationFetched: true
-      })
+      });
+      console.log('SAGAR: Current position: ', JSON.stringify(this.state.currentPosition));
+      console.log('SAGAR: POI position: ', JSON.stringify(this.props.sceneNavigator.viroAppProps.POIPosition));
     }
   }
 
   _onPositionFailed(error) {
     console.log('SAGAR:', JSON.stringify(error));
+    this.setState({
+        message: "Failed to fetch location",
+        isLocationFetched: false
+      });
   }
   
   _adjustCloseObject(position) {
@@ -138,7 +150,12 @@ export default class HelloLocation extends Component {
     let devicePoint = this._latLngToMerc(this.state.currentPosition.lat, this.state.currentPosition.lng);  // Motius HQ
     // 32 N 692864 5339484
     let tmp_dist = this._pointDistance(this.state.currentPosition, point);
-    
+    tmp_dist = tmp_dist/1000;
+    tmp_dist = tmp_dist.toFixed(2);
+    console.log('SAGAR: Distance - ', tmp_dist);
+    this.setState({
+      distance: tmp_dist + "Kms"
+    });
     var objFinalPosZ = objPoint.y - devicePoint.y;
     var objFinalPosX = objPoint.x - devicePoint.x;
     //flip the z, as negative z(is in front of us which is north, pos z is behind(south).
