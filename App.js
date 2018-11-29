@@ -27,7 +27,7 @@ import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplet
  TODO: Insert your API key below
  */
 var sharedProps = {
-  apiKey:"E033D142-5C2F-4C2A-9479-DEFEBC63701C",
+  apiKey:"**",
 };
 
 // Sets the default scene you want for AR and VR
@@ -92,7 +92,7 @@ export default class ViroSample extends Component {
             
             query={{
               // available options: https://developers.google.com/places/web-service/autocomplete
-              key: 'AIzaSyA79qVm1it-rT11oaqJgMY875xUtVkcw3s',
+              key: '**',
               language: 'en', // language of the results
               types: '(cities)' // default: 'geocode'
             }}
